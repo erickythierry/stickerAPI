@@ -1,11 +1,14 @@
 import fs from 'fs';
 import express from 'express';
 import ffmpeg from 'fluent-ffmpeg';
+import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
 import bodyParser from 'body-parser';
 import multer from "multer"
 import { addMetadataToWebpBuffer, setMetadata } from 'wa-sticker-formatter';
 import sharp from 'sharp'
 import { PassThrough } from 'node:stream';
+
+ffmpeg.setFfmpegPath(ffmpegPath)
 
 const app = express();
 // parse application/x-www-form-urlencoded

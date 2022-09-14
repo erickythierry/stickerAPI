@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "body-parser": "^1.20.0",
     "express": "^4.17.1",
     "fluent-ffmpeg": "^2.1.2",
