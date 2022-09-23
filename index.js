@@ -20,8 +20,8 @@ app.use(bodyParser.json())
 const upload = multer({ dest: 'publico/' });
 const porta = process.env.PORT || 3000
 
-const defaultAutor = 'T.bot Figurinhas'
-const defaultPack = 'bot.figurinhas.cf'
+const defaultAutor = 'T.bot'
+const defaultPack = '👉 bot.figurinhas.cf'
 
 const timeStart = Date.now()
 let contador = 0
@@ -37,20 +37,37 @@ app.listen(porta, function () {
 app.get('/', async function (req, res) {
     let data = new Date(timeStart).toLocaleString("pt-BR", { timeZone: "America/Belem" })
     res.send(`
-        <br>
-        <br>
-        <center>
-            <div>
-                <h1>StickerAPI</h1>
-            </div>
-            <div>
-                <h4>Rodando desde: ${data}</h4>
-            </div>
-            <div>
-                <h4>Total de figurinhas feitas: <strong>${contador}</strong></h4>
-            </div>
-        </center>
-    `)
+        <!DOCTYPE html>
+        <html lang="pt">
+
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>StickerAPI by Thierry</title>
+        </head>
+
+        <body style="background-color: #5f6368; color: rgb(255, 255, 255);">
+            <br>
+            <br>
+            <center>
+                <div>
+                    <div>
+                        <h1>StickerAPI</h1>
+                    </div>
+                    <div>
+                        <h4>Rodando desde: ${data}</h4>
+                    </div>
+                    <div>
+                        <h4>Total de figurinhas feitas: <strong>${contador}</strong></h4>
+                    </div>
+                </div>
+
+            </center>
+        </body>
+
+        </html>
+    `);
 })
 
 app.post('/', upload.single('file'), async function (req, res) {
@@ -83,35 +100,6 @@ app.post('/', upload.single('file'), async function (req, res) {
     }
 })
 
-async function toPngBuffer(file) {
-    return new Promise(async (resolve, reject) => {
-        sharp(file)
-            .png({ force: true })
-            .toBuffer((err, data, info) => {
-                if (err) {
-                    console.error(err);
-                    return reject(err)
-                }
-                return resolve(data)
-            });
-    })
-}
-async function toGif(file) {
-    var fim = file.replace('.mp4', '.gif')
-    return new Promise(async (resolve, reject) => {
-        ffmpeg(file)
-            .addOutputOption([
-                '-ss', '00', '-t', '10', '-vf',
-                'fps=10,scale=400:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse',
-                '-loop', '0'
-            ])
-            .toFormat('gif')
-            .save(fim)
-            .on('end', () => { resolve(fim) })
-            .on('error', () => { reject(null) })
-    })
-
-}
 async function toWebp(file, crop, name) {
     var fim = name.replace('.jpeg', '').replace('.png', '').replace('.gif', '')
     fim = fim + '.webp'
@@ -142,39 +130,6 @@ async function toWebp(file, crop, name) {
                 }
                 return resolve(fim)
             });
-    })
-}
-async function webp2gif(file, name) {
-    var fim = name + '.gif'
-    return new Promise(async (resolve, reject) => {
-        sharp(file, { animated: true })
-            .removeAlpha()
-            .toFile(fim, async (err, info) => {
-                if (err) {
-                    console.error(err);
-                    return reject(err)
-                }
-                var fileFim = await toMp4(fim)
-                resolve(fileFim)
-            });
-    })
-
-}
-async function toMp4(file) {
-    var fim = file.replace('.gif', '.mp4')
-    return new Promise(async (resolve, reject) => {
-        ffmpeg(file)
-            .addOutputOption([
-                '-movflags', 'faststart', '-pix_fmt', 'yuv420p',
-                '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2'
-            ])
-            .toFormat('mp4')
-            .save(fim)
-            .on('end', () => {
-                delFile(file)
-                resolve(fim)
-            })
-            .on('error', (err) => { reject(err) })
     })
 }
 async function stickerAnimated(file, crop) {
@@ -249,7 +204,6 @@ async function toWebpAnimated(file, crop) {
 
     })
 }
-
 export class Exif {
     constructor(options) {
         this.data = {

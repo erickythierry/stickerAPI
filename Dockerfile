@@ -4,4 +4,4 @@ RUN apt-get install ffmpeg -y
 WORKDIR /app
 COPY . /app
 RUN npm i
-CMD node index.js
+CMD npm start
