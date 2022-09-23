@@ -53,7 +53,7 @@ app.get('/', async function (req, res) {
     `)
 })
 
-app.post('/webp', upload.single('file'), async function (req, res) {
+app.post('/', upload.single('file'), async function (req, res) {
     let { pack, autor, crop } = req.body
     pack = pack ? pack : defaultPack
     autor = autor ? autor : defaultAutor
