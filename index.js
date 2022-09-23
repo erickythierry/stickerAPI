@@ -36,6 +36,8 @@ app.listen(porta, function () {
 });
 
 app.get('/', async function (req, res) {
+    let data = new Date(timeStart)
+    data = data.getHours + ":" + data.getMinutes + ":" + data.getSeconds + " - " + data.getDay + '/' + data.getMonth + "/" + data.getFullYear
     res.send(`
         <br>
         <br>
@@ -44,7 +46,7 @@ app.get('/', async function (req, res) {
                 <h1>StickerAPI</h1>
             </div>
             <div>
-                <h4>Rodando desde: ${(new Date(timeStart))}</h4>
+                <h4>Rodando desde: ${data}</h4>
             </div>
             <div>
                 <h4>Total de figurinhas feitas: <strong>${contador}</strong></h4>
