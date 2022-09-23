@@ -133,7 +133,7 @@ async function toWebp(file, crop, name) {
             .webp({
                 loop: 0,
                 force: true,
-                quality: 80
+                quality: 60
             })
             .toFile(fim, (err, info) => {
                 if (err) {
@@ -234,7 +234,7 @@ async function toWebpAnimated(file, crop) {
                 .webp({
                     loop: 0,
                     force: true,
-                    quality: 80
+                    quality: 60
                 })
                 .toBuffer((err, data, info) => {
                     if (err) {
