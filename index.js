@@ -4,9 +4,11 @@ import ffmpeg from 'fluent-ffmpeg';
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
 import bodyParser from 'body-parser';
 import multer from "multer"
-import { addMetadataToWebpBuffer, setMetadata } from 'wa-sticker-formatter';
 import sharp from 'sharp'
 import { PassThrough } from 'node:stream';
+import Webp from 'node-webpmux'
+import { TextEncoder } from 'util'
+const { Image } = Webp;
 
 ffmpeg.setFfmpegPath(ffmpegPath)
 
@@ -22,6 +24,9 @@ const porta = process.env.PORT || 3000
 const defaultAutor = 'T.bot Figurinhas'
 const defaultPack = 'bot.figurinhas.cf'
 
+const timeStart = Date.now()
+let contador = 0
+
 
 app.set('json spaces', 4)
 
@@ -31,11 +36,25 @@ app.listen(porta, function () {
 });
 
 app.get('/', async function (req, res) {
-    res.send('ok')
+    res.send(`
+        <br>
+        <br>
+        <center>
+            <div>
+                <h1>StickerAPI</h1>
+            </div>
+            <div>
+                <h4>Rodando desde: ${(new Date(timeStart))}</h4>
+            </div>
+            <div>
+                <h4>Total de figurinhas feitas: <strong>${contador}</strong></h4>
+            </div>
+        </center>
+    `)
 })
 
 app.post('/webp', upload.single('file'), async function (req, res) {
-    let {pack, autor, crop} = req.body
+    let { pack, autor, crop } = req.body
     pack = pack ? pack : defaultPack
     autor = autor ? autor : defaultAutor
     console.log(req.file)
@@ -43,18 +62,20 @@ app.post('/webp', upload.single('file'), async function (req, res) {
         case "video/mp4":
             let fileStream = fs.createReadStream(req.file.path)
             let sticker = await stickerAnimated(fileStream, crop)
-            let webpWithMetadata = await addMetadataToWebpBuffer(sticker, pack, autor)
-            fs.writeFileSync((req.file.path+".webp"), webpWithMetadata)
-            res.download((req.file.path+".webp"))
+            let webpWithMetadata = await new Exif({ pack, autor }).add(sticker)
+            fs.writeFileSync((req.file.path + ".webp"), webpWithMetadata)
+            res.download((req.file.path + ".webp"))
+            contador++
             break;
 
         case "image/gif":
         case "image/png":
         case "image/jpeg":
             let webp = await toWebp(req.file.path, crop, req.file.path)
-            let withMetadata = await setMetadata(pack, autor, webp)
-            fs.writeFileSync((req.file.path+".webp"), withMetadata)
-            res.download((req.file.path+".webp"))
+            let withMetadata = await new Exif({ pack, autor }).add(webp)
+            fs.writeFileSync((req.file.path + ".webp"), withMetadata)
+            res.download((req.file.path + ".webp"))
+            contador++
             break;
 
         default:
@@ -227,4 +248,41 @@ async function toWebpAnimated(file, crop) {
         }
 
     })
+}
+
+export class Exif {
+    constructor(options) {
+        this.data = {
+            'sticker-pack-id': ('THIERRY' + Date.now()),
+            'sticker-pack-name': options.pack || packDefault,
+            'sticker-pack-publisher': options.autor || autorDefault
+        }
+    }
+
+    build = () => {
+        const data = JSON.stringify(this.data)
+        const exif = Buffer.concat([
+            Buffer.from([
+                0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x16, 0x00, 0x00, 0x00
+            ]),
+            Buffer.from(data, 'utf-8')
+        ])
+        exif.writeUIntLE(new TextEncoder().encode(data).length, 14, 4)
+        return exif
+    }
+
+    add = async (image) => {
+        const exif = this.exif || this.build()
+        image =
+            image instanceof Image
+                ? image
+                : await (async () => {
+                    const img = new Image()
+                    await img.load(image)
+                    return img
+                })()
+        image.exif = exif
+        return await image.save(null)
+    }
 }
