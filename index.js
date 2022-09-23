@@ -18,7 +18,6 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 const upload = multer({ dest: 'publico/' });
-const getRandom = (ext) => { return `${Math.floor(Math.random() * 10000)}${ext}` }
 const porta = process.env.PORT || 3000
 
 const defaultAutor = 'T.bot Figurinhas'
@@ -36,8 +35,7 @@ app.listen(porta, function () {
 });
 
 app.get('/', async function (req, res) {
-    let data = new Date(timeStart)
-    data = data.getHours() + ":" + data.getMinutes() + ":" + data.getSeconds() + " - " + data.getDay() + '/' + data.getMonth() + "/" + data.getFullYear()
+    let data = new Date(timeStart).toLocaleString("pt-BR", { timeZone: "America/Belem" })
     res.send(`
         <br>
         <br>
