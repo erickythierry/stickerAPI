@@ -37,7 +37,7 @@ app.listen(porta, function () {
 
 app.get('/', async function (req, res) {
     let data = new Date(timeStart)
-    data = data.getHours + ":" + data.getMinutes + ":" + data.getSeconds + " - " + data.getDay + '/' + data.getMonth + "/" + data.getFullYear
+    data = data.getHours() + ":" + data.getMinutes() + ":" + data.getSeconds() + " - " + data.getDay() + '/' + data.getMonth() + "/" + data.getFullYear()
     res.send(`
         <br>
         <br>
